@@ -63,7 +63,7 @@ jobs:
 
   golangci-lint:
     if: ${{ github.event_name }} == 'push' || ${{ github.event_name }} == 'pull_request'
-    needs: [ resolve-modules ]
+    needs: [   resolve-modules ]
     runs-on: ubuntu-20.04
     strategy:
       matrix: ${{ fromJson(needs.resolve-modules.outputs.matrix) }}
