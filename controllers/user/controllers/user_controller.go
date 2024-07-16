@@ -242,7 +242,7 @@ func (r *UserReconciler) syncNamespace(ctx context.Context, user *userv1.User) c
 			}
 			ns.Annotations[userAnnotationCreatorKey] = user.Name
 			ns.Annotations[userAnnotationOwnerKey] = user.Annotations[userAnnotationOwnerKey]
-			ns.Labels = config.SetPodSecurity(ns.Labels)
+			//ns.Labels = config.SetPodSecurity(ns.Labels)
 			// add label for namespace to filter
 			ns.Labels[userLabelOwnerKey] = user.Annotations[userAnnotationOwnerKey]
 			ns.SetOwnerReferences([]metav1.OwnerReference{})
