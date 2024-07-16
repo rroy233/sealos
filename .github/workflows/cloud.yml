@@ -102,6 +102,11 @@ jobs:
         run: |
           sudo sealos login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }} --debug docker.io
 
+      - name: Sealos login to ghcr.io
+        # if push to master, then login to ghcr.io
+        run: |
+          sudo sealos login -u ${{ github.repository_owner }} -p ${{ secrets.GH_PAT }} --debug ghcr.io
+
       - name: Build sealos cloud cluster image
         working-directory: deploy/cloud
         run: |
