@@ -83,7 +83,7 @@ jobs:
         id: prepare
         run: |
           bash ./scripts/resolve-tag-image.sh "${{ inputs.push_image }}" "${{ steps.check_tag.outputs.isTag }}"  "${{ inputs.push_image_tag }}"     
-          echo repo=ghcr.io/${{ github.repository_owner }}/sealos-cloud >> $GITHUB_OUTPUT
+          echo repo=docker.io/${{ github.repository_owner }}/sealos-cloud >> $GITHUB_OUTPUT
       - name: Download sealos
         uses: actions/download-artifact@v3
         with:
@@ -101,6 +101,11 @@ jobs:
         # if push to master, then login to ghcr.io
         run: |
           sudo sealos login -u ${{ github.repository_owner }} -p ${{ secrets.GH_PAT }} --debug ghcr.io
+
+      - name: Sealos login to docker.io
+          # if push to master, then login to docker.io
+        run: |
+          sudo sealos login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }} --debug docker.io
 
       - name: Build sealos cloud cluster image
         working-directory: deploy/cloud
