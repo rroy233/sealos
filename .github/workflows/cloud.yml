@@ -74,16 +74,16 @@ jobs:
       - name: Check if tag
         id: check_tag
         run: |
-          if [[ "${{ github.ref }}" == refs/tags/* ]]; then
-            echo "isTag=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "isTag=false" >> "$GITHUB_OUTPUT"
+          if [[ "${{ github.ref }}" == refs/tags/* ]]; then  
+            echo "isTag=true" >> "$GITHUB_OUTPUT"  
+          else  
+            echo "isTag=false" >> "$GITHUB_OUTPUT"  
           fi
       - name: Prepare
         id: prepare
         run: |
-          bash ./scripts/resolve-tag-image.sh "${{ inputs.push_image }}" "${{ steps.check_tag.outputs.isTag }}"  "${{ inputs.push_image_tag }}"     
-          echo repo=docker.io/${{ github.repository_owner }}/sealos-cloud >> $GITHUB_OUTPUT
+          bash ./scripts/resolve-tag-image.sh "${{ inputs.push_image }}" "${{ steps.check_tag.outputs.isTag }}"  "${{ inputs.push_image_tag }}"       
+          echo repo=registry.cn-guangzhou.aliyuncs.com/${{ github.repository_owner }}/sealos-cloud >> $GITHUB_OUTPUT
       - name: Download sealos
         uses: actions/download-artifact@v3
         with:
@@ -91,63 +91,46 @@ jobs:
           path: /tmp/
       - name: Verify sealos
         run: |
-          sudo chmod a+x /tmp/sealos
-          sudo mv /tmp/sealos /usr/bin/sealos
-          sudo sealos version
+          sudo chmod a+x /tmp/sealos  
+          sudo mv /tmp/sealos /usr/bin/sealos  
+          sudo sealos version  
 
       # todo: mutate image tag in images/shim and scripts or change scripts to use changeable tags
 
-      - name: Sealos login to docker.io
-        # if push to master, then login to docker.io
+      - name: Sealos login to aliyun
+        # if push to master, then login to aliyun
         run: |
-          sudo sealos login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }} --debug docker.io
+          sudo sealos login -u ${{ secrets.ALIYUN_USERNAME }} -p ${{ secrets.ALIYUN_PASSWORD }} --debug registry.cn-guangzhou.aliyuncs.com  
 
       - name: Sealos login to ghcr.io
         # if push to master, then login to ghcr.io
         run: |
-          sudo sealos login -u ${{ github.repository_owner }} -p ${{ secrets.GH_PAT }} --debug ghcr.io
+          sudo sealos login -u ${{ github.repository_owner }} -p ${{ secrets.GH_PAT }} --debug ghcr.io  
 
       - name: Build sealos cloud cluster image
         working-directory: deploy/cloud
         run: |
-          [ -z "${{ inputs.build_from }}" ] && BuildFromTag="latest" || BuildFromTag="${{ inputs.build_from }}"; echo "BuildFromTag=${BuildFromTag}" 
-          sed -i "s#labring#${{ github.repository_owner }}#g" init.sh
-          sed -i "s#latest#${BuildFromTag}#g" init.sh
+          [ -z "${{ inputs.build_from }}" ] && BuildFromTag="latest" || BuildFromTag="${{ inputs.build_from }}"; echo "BuildFromTag=${BuildFromTag}"   
+          sed -i "s#labring#${{ github.repository_owner }}#g" init.sh  
+          sed -i "s#latest#${BuildFromTag}#g" init.sh  
           
-          sudo bash init.sh amd64 
-          sudo sealos build -t ${{ steps.prepare.outputs.repo }}:${{ steps.prepare.outputs.tag_name }}-amd64 --platform linux/amd64 -f Kubefile
-          sudo sealos build -t ${{ steps.prepare.outputs.repo }}:latest-amd64 --platform linux/amd64 -f Kubefile
+          sudo bash init.sh amd64   
+          sudo sealos build -t ${{ steps.prepare.outputs.repo }}:${{ steps.prepare.outputs.tag_name }}-amd64 --platform linux/amd64 -f Kubefile  
+          sudo sealos build -t ${{ steps.prepare.outputs.repo }}:latest-amd64 --platform linux/amd64 -f Kubefile  
           
-          # delete old registry cache
-          sudo rm -rf registry
-          sudo rm -rf tars
+          # delete old registry cache  
+          sudo rm -rf registry  
+          sudo rm -rf tars  
           
-          sudo bash init.sh arm64 
-          sudo sealos build -t ${{ steps.prepare.outputs.repo }}:${{ steps.prepare.outputs.tag_name }}-arm64 --platform linux/arm64 -f Kubefile
-          sudo sealos build -t ${{ steps.prepare.outputs.repo }}:latest-arm64 --platform linux/arm64 -f Kubefile
-          
+          sudo bash init.sh arm64   
+          sudo sealos build -t ${{ steps.prepare.outputs.repo }}:${{ steps.prepare.outputs.tag_name }}-arm64 --platform linux/arm64 -f Kubefile  
+          sudo sealos build -t ${{ steps.prepare.outputs.repo }}:latest-arm64 --platform linux/arm64 -f Kubefile  
+
       - name: Manifest Cluster Images
         # if push to master, then patch images to docker.io
         run: |
-          sudo sealos images
-          bash docker/patch/manifest-cluster-images.sh ${{ steps.prepare.outputs.repo }}:${{ steps.prepare.outputs.tag_name }}
+          sudo sealos images  
+          bash docker/patch/manifest-cluster-images.sh ${{ steps.prepare.outputs.repo }}:${{ steps.prepare.outputs.tag_name }}  
           bash docker/patch/manifest-cluster-images.sh ${{ steps.prepare.outputs.repo }}:latest
         env:
           OWNER: ${{ github.repository_owner }}
-
-      # todo: build multi-arch images
-
-      - name: Renew issue and Sync Images
-        uses: labring/gh-rebot@v0.0.6
-        if: ${{ github.repository_owner == env.DEFAULT_OWNER }}
-        with:
-          version: v0.0.8-rc1
-        env:
-          GH_TOKEN: "${{ secrets.GH_PAT }}"
-          SEALOS_TYPE: "issue_renew"
-          SEALOS_ISSUE_TITLE: "[DaylyReport] Auto build for sealos"
-          SEALOS_ISSUE_BODYFILE: "scripts/ISSUE_RENEW.md"
-          SEALOS_ISSUE_LABEL: "dayly-report"
-          SEALOS_ISSUE_TYPE: "day"
-          SEALOS_ISSUE_REPO: "labring-actions/cluster-image"
-          SEALOS_COMMENT_BODY: "/imagesync ghcr.io/${{ github.repository_owner }}/sealos-cloud:${{ steps.prepare.outputs.tag_name }}"
