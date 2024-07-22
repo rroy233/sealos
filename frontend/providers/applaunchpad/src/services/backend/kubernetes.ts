@@ -1,15 +1,15 @@
 import * as k8s from '@kubernetes/client-node';
 import * as yaml from 'js-yaml';
-import type { V1Deployment, V1StatefulSet } from '@kubernetes/client-node';
+import type { V1Deployment, V1StatefulSet, V1DaemonSet } from '@kubernetes/client-node';
 import { UserQuotaItemType } from '@/types/user';
 import { memoryFormatToMi, cpuFormatToM } from '@/utils/tools';
 
 export function CheckIsInCluster(): [boolean, string] {
   if (
-    process.env.KUBERNETES_SERVICE_HOST !== undefined &&
-    process.env.KUBERNETES_SERVICE_HOST !== '' &&
-    process.env.KUBERNETES_SERVICE_PORT !== undefined &&
-    process.env.KUBERNETES_SERVICE_PORT !== ''
+      process.env.KUBERNETES_SERVICE_HOST !== undefined &&
+      process.env.KUBERNETES_SERVICE_HOST !== '' &&
+      process.env.KUBERNETES_SERVICE_PORT !== undefined &&
+      process.env.KUBERNETES_SERVICE_PORT !== ''
   ) {
     return [
       true,
@@ -47,8 +47,8 @@ export function K8sApi(config: string): k8s.KubeConfig {
 }
 
 export async function CreateYaml(
-  kc: k8s.KubeConfig,
-  specs: k8s.KubernetesObject[]
+    kc: k8s.KubeConfig,
+    specs: k8s.KubernetesObject[]
 ): Promise<k8s.KubernetesObject[]> {
   const client = k8s.KubernetesObjectApi.makeApiClient(kc);
   const validSpecs = specs.filter((s) => s && s.kind && s.metadata);
@@ -60,7 +60,7 @@ export async function CreateYaml(
       spec.metadata.annotations = spec.metadata.annotations || {};
       delete spec.metadata.annotations['kubectl.kubernetes.io/last-applied-configuration'];
       spec.metadata.annotations['kubectl.kubernetes.io/last-applied-configuration'] =
-        JSON.stringify(spec);
+          JSON.stringify(spec);
 
       console.log('create yaml: ', spec.kind);
       const response = await client.create(spec);
@@ -77,15 +77,14 @@ export async function CreateYaml(
         error;
       }
     }
-    // console.error(error, '<=create error')
     return Promise.reject(error);
   }
   return created;
 }
 
 export async function replaceYaml(
-  kc: k8s.KubeConfig,
-  specs: k8s.KubernetesObject[]
+    kc: k8s.KubeConfig,
+    specs: k8s.KubernetesObject[]
 ): Promise<k8s.KubernetesObject[]> {
   const client = k8s.KubernetesObjectApi.makeApiClient(kc);
   const validSpecs = specs.filter((s) => s && s.kind && s.metadata);
@@ -96,7 +95,7 @@ export async function replaceYaml(
     spec.metadata.annotations = spec.metadata.annotations || {};
     delete spec.metadata.annotations['kubectl.kubernetes.io/last-applied-configuration'];
     spec.metadata.annotations['kubectl.kubernetes.io/last-applied-configuration'] =
-      JSON.stringify(spec);
+        JSON.stringify(spec);
 
     try {
       // @ts-ignore
@@ -132,8 +131,8 @@ export async function replaceYaml(
 }
 
 export async function getUserQuota(
-  kc: k8s.KubeConfig,
-  namespace: string
+    kc: k8s.KubeConfig,
+    namespace: string
 ): Promise<UserQuotaItemType[]> {
   const k8sApi = kc.makeApiClient(k8s.CoreV1Api);
 
@@ -172,11 +171,11 @@ export async function getUserBalance(kc: k8s.KubeConfig) {
   const k8sApi = kc.makeApiClient(k8s.CustomObjectsApi);
 
   const { body } = (await k8sApi.getNamespacedCustomObject(
-    'account.sealos.io',
-    'v1',
-    'sealos-system',
-    'accounts',
-    user.name
+      'account.sealos.io',
+      'v1',
+      'sealos-system',
+      'accounts',
+      user.name
   )) as { body: { status: { balance: number; deductionBalance: number } } };
 
   if (body?.status?.balance !== undefined && body?.status?.deductionBalance !== undefined) {
@@ -200,14 +199,14 @@ export async function getK8s({ kubeconfig }: { kubeconfig: string }) {
   const applyYamlList = async (yamlList: string[], type: 'create' | 'replace') => {
     // insert namespace
     const formatYaml: k8s.KubernetesObject[] = yamlList
-      .map((item) => yaml.loadAll(item))
-      .flat()
-      .map((item: any) => {
-        if (item.metadata) {
-          item.metadata.namespace = namespace;
-        }
-        return item;
-      });
+        .map((item) => yaml.loadAll(item))
+        .flat()
+        .map((item: any) => {
+          if (item.metadata) {
+            item.metadata.namespace = namespace;
+          }
+          return item;
+        });
 
     if (type === 'create') {
       return CreateYaml(kc, formatYaml);
@@ -218,7 +217,7 @@ export async function getK8s({ kubeconfig }: { kubeconfig: string }) {
   };
 
   const getDeployApp = async (appName: string) => {
-    let app: V1Deployment | V1StatefulSet | null = null;
+    let app: V1Deployment | V1StatefulSet | V1DaemonSet | null = null;
     const k8sApp = kc.makeApiClient(k8s.AppsV1Api);
     const k8sCore = kc.makeApiClient(k8s.CoreV1Api);
 
@@ -230,6 +229,12 @@ export async function getK8s({ kubeconfig }: { kubeconfig: string }) {
 
     try {
       app = (await k8sApp.readNamespacedStatefulSet(appName, namespace)).body;
+    } catch (error: any) {
+      error;
+    }
+
+    try {
+      app = (await k8sApp.readNamespacedDaemonSet(appName, namespace)).body;
     } catch (error: any) {
       error;
     }

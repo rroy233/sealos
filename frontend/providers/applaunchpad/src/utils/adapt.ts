@@ -48,11 +48,11 @@ const nanoid = customAlphabet('abcdefghijklmnopqrstuvwxyz', 12);
 export const adaptAppListItem = (app: V1Deployment & V1StatefulSet): AppListItemType => {
   // compute store amount
   const storeAmount = app.spec?.volumeClaimTemplates
-    ? app.spec?.volumeClaimTemplates.reduce(
-        (sum, item) => sum + Number(item?.metadata?.annotations?.value),
-        0
+        ? app.spec?.volumeClaimTemplates.reduce(
+          (sum, item) => sum + Number(item?.metadata?.annotations?.value),
+          0
       )
-    : 0;
+      : 0;
 
   const gpuNodeSelector = app?.spec?.template?.spec?.nodeSelector;
 
@@ -64,12 +64,12 @@ export const adaptAppListItem = (app: V1Deployment & V1StatefulSet): AppListItem
     createTime: dayjs(app.metadata?.creationTimestamp).format('YYYY/MM/DD HH:mm'),
     cpu: cpuFormatToM(app.spec?.template?.spec?.containers?.[0]?.resources?.limits?.cpu || '0'),
     memory: memoryFormatToMi(
-      app.spec?.template?.spec?.containers?.[0]?.resources?.limits?.memory || '0'
+        app.spec?.template?.spec?.containers?.[0]?.resources?.limits?.memory || '0'
     ),
     gpu: {
       type: gpuNodeSelector?.[gpuNodeSelectorKey] || '',
       amount: Number(
-        app.spec?.template?.spec?.containers?.[0]?.resources?.limits?.[gpuResourceKey] || 1
+          app.spec?.template?.spec?.containers?.[0]?.resources?.limits?.[gpuResourceKey] || 1
       ),
       manufacturers: 'nvidia'
     },
@@ -109,7 +109,7 @@ export const adaptPod = (pod: V1Pod): PodDetailType => {
           }
           if (key && podStatusMap[key]) {
             const lastStateReason =
-              lasteStateObj && lasteStateObj[key] ? lasteStateObj[key]?.reason : '';
+                lasteStateObj && lasteStateObj[key] ? lasteStateObj[key]?.reason : '';
             return {
               lastStateReason,
               ...podStatusMap[key],
@@ -149,28 +149,29 @@ export const adaptMetrics = (metrics: SinglePodMetrics): PodMetrics => {
 
 export const adaptEvents = (events: CoreV1EventList): PodEvent[] => {
   return events.items
-    .sort((a, b) => {
-      const lastTimeA = a.lastTimestamp || a.eventTime;
-      const lastTimeB = b.lastTimestamp || b.eventTime;
+      .sort((a, b) => {
+        const lastTimeA = a.lastTimestamp || a.eventTime;
+        const lastTimeB = b.lastTimestamp || b.eventTime;
 
-      if (!lastTimeA || !lastTimeB) return 1;
-      return new Date(lastTimeB).getTime() - new Date(lastTimeA).getTime();
-    })
-    .map((item) => ({
-      id: item.metadata.uid || `${Date.now()}`,
-      reason: item.reason || '',
-      message: item.message || '',
-      count: item.count || 0,
-      type: item.type || 'Warning',
-      firstTime: formatPodTime(item.firstTimestamp || item.metadata?.creationTimestamp),
-      lastTime: formatPodTime(item.lastTimestamp || item?.eventTime)
-    }));
+        if (!lastTimeA || !lastTimeB) return 1;
+        return new Date(lastTimeB).getTime() - new Date(lastTimeA).getTime();
+      })
+      .map((item) => ({
+        id: item.metadata.uid || `${Date.now()}`,
+        reason: item.reason || '',
+        message: item.message || '',
+        count: item.count || 0,
+        type: item.type || 'Warning',
+        firstTime: formatPodTime(item.firstTimestamp || item.metadata?.creationTimestamp),
+        lastTime: formatPodTime(item.lastTimestamp || item?.eventTime)
+      }));
 };
 
 export enum YamlKindEnum {
   StatefulSet = 'StatefulSet',
   Deployment = 'Deployment',
   Service = 'Service',
+  DaemonSet = 'DaemonSet',
   ConfigMap = 'ConfigMap',
   Ingress = 'Ingress',
   Issuer = 'Issuer',
@@ -204,7 +205,7 @@ export const adaptAppDetail = (configs: DeployKindsType[]): AppDetailType => {
   }
 
   const useGpu = !!Number(
-    appDeploy.spec?.template?.spec?.containers?.[0]?.resources?.limits?.[gpuResourceKey]
+      appDeploy.spec?.template?.spec?.containers?.[0]?.resources?.limits?.[gpuResourceKey]
   );
   const gpuNodeSelector = useGpu ? appDeploy?.spec?.template?.spec?.nodeSelector : null;
 
@@ -217,25 +218,25 @@ export const adaptAppDetail = (configs: DeployKindsType[]): AppDetailType => {
     status: appStatusMap.waiting,
     isPause: !!appDeploy?.metadata?.annotations?.[pauseKey],
     imageName:
-      appDeploy?.metadata?.annotations?.originImageName ||
-      appDeploy.spec?.template?.spec?.containers?.[0]?.image ||
-      '',
+        appDeploy?.metadata?.annotations?.originImageName ||
+        appDeploy.spec?.template?.spec?.containers?.[0]?.image ||
+        '',
     runCMD: appDeploy.spec?.template?.spec?.containers?.[0]?.command?.join(' ') || '',
     cmdParam:
-      (appDeploy.spec?.template?.spec?.containers?.[0]?.args?.length === 1
-        ? appDeploy.spec?.template?.spec?.containers?.[0]?.args.join(' ')
-        : JSON.stringify(appDeploy.spec?.template?.spec?.containers?.[0]?.args)) || '',
+        (appDeploy.spec?.template?.spec?.containers?.[0]?.args?.length === 1
+            ? appDeploy.spec?.template?.spec?.containers?.[0]?.args.join(' ')
+            : JSON.stringify(appDeploy.spec?.template?.spec?.containers?.[0]?.args)) || '',
     replicas: appDeploy.spec?.replicas || 0,
     cpu: cpuFormatToM(
-      appDeploy.spec?.template?.spec?.containers?.[0]?.resources?.limits?.cpu || '0'
+        appDeploy.spec?.template?.spec?.containers?.[0]?.resources?.limits?.cpu || '0'
     ),
     memory: memoryFormatToMi(
-      appDeploy.spec?.template?.spec?.containers?.[0]?.resources?.limits?.memory || '0'
+        appDeploy.spec?.template?.spec?.containers?.[0]?.resources?.limits?.memory || '0'
     ),
     gpu: {
       type: gpuNodeSelector?.[gpuNodeSelectorKey] || '',
       amount: Number(
-        appDeploy.spec?.template?.spec?.containers?.[0]?.resources?.limits?.[gpuResourceKey] || 1
+          appDeploy.spec?.template?.spec?.containers?.[0]?.resources?.limits?.[gpuResourceKey] || 1
       ),
       manufacturers: 'nvidia'
     },
@@ -250,76 +251,76 @@ export const adaptAppDetail = (configs: DeployKindsType[]): AppDetailType => {
       yData: new Array(30).fill('0')
     },
     envs:
-      appDeploy.spec?.template?.spec?.containers?.[0]?.env?.map((env) => {
-        return {
-          key: env.name,
-          value: env.value || '',
-          valueFrom: env.valueFrom
-        };
-      }) || [],
+        appDeploy.spec?.template?.spec?.containers?.[0]?.env?.map((env) => {
+          return {
+            key: env.name,
+            value: env.value || '',
+            valueFrom: env.valueFrom
+          };
+        }) || [],
     networks:
-      deployKindsMap.Service?.spec?.ports?.map((item) => {
-        const ingress = configs.find(
-          (config: any) =>
-            config.kind === YamlKindEnum.Ingress &&
-            config?.spec?.rules?.[0]?.http?.paths?.[0]?.backend?.service?.port?.number === item.port
-        ) as V1Ingress;
-        const domain = ingress?.spec?.rules?.[0].host || '';
+        deployKindsMap.Service?.spec?.ports?.map((item) => {
+          const ingress = configs.find(
+              (config: any) =>
+                  config.kind === YamlKindEnum.Ingress &&
+                  config?.spec?.rules?.[0]?.http?.paths?.[0]?.backend?.service?.port?.number === item.port
+          ) as V1Ingress;
+          const domain = ingress?.spec?.rules?.[0].host || '';
 
-        return {
-          networkName: ingress?.metadata?.name || '',
-          portName: item.name || '',
-          port: item.port,
-          protocol:
-            (ingress?.metadata?.annotations?.[
-              'nginx.ingress.kubernetes.io/backend-protocol'
-            ] as AppEditType['networks'][0]['protocol']) || item.protocol === 'TCP'
-              ? 'HTTP'
-              : (item.protocol as AppEditType['networks'][number]['protocol']),
-          openPublicDomain: !!ingress,
-          ...(domain.endsWith(SEALOS_DOMAIN)
-            ? {
-                publicDomain: domain.split('.')[0],
-                customDomain: ''
-              }
-            : {
-                publicDomain: ingress?.metadata?.labels?.[publicDomainKey] || '',
-                customDomain: domain
-              })
-        };
-      }) || [],
+          return {
+            networkName: ingress?.metadata?.name || '',
+            portName: item.name || '',
+            port: item.port,
+            protocol:
+                (ingress?.metadata?.annotations?.[
+                    'nginx.ingress.kubernetes.io/backend-protocol'
+                    ] as AppEditType['networks'][0]['protocol']) || item.protocol === 'TCP'
+                    ? 'HTTP'
+                    : (item.protocol as AppEditType['networks'][number]['protocol']),
+            openPublicDomain: !!ingress,
+            ...(domain.endsWith(SEALOS_DOMAIN)
+                ? {
+                  publicDomain: domain.split('.')[0],
+                  customDomain: ''
+                }
+                : {
+                  publicDomain: ingress?.metadata?.labels?.[publicDomainKey] || '',
+                  customDomain: domain
+                })
+          };
+        }) || [],
     hpa: deployKindsMap.HorizontalPodAutoscaler?.spec
-      ? {
+        ? {
           use: true,
           target:
-            (deployKindsMap.HorizontalPodAutoscaler.spec.metrics?.[0]?.resource
-              ?.name as HpaTarget) || 'cpu',
+              (deployKindsMap.HorizontalPodAutoscaler.spec.metrics?.[0]?.resource
+                  ?.name as HpaTarget) || 'cpu',
           value: deployKindsMap.HorizontalPodAutoscaler.spec.metrics?.[0]?.resource?.target
-            ?.averageUtilization
-            ? deployKindsMap.HorizontalPodAutoscaler.spec.metrics[0].resource.target
-                .averageUtilization / 10
-            : 50,
+              ?.averageUtilization
+              ? deployKindsMap.HorizontalPodAutoscaler.spec.metrics[0].resource.target
+              .averageUtilization / 10
+              : 50,
           minReplicas: deployKindsMap.HorizontalPodAutoscaler.spec.minReplicas || 3,
           maxReplicas: deployKindsMap.HorizontalPodAutoscaler.spec.maxReplicas || 10
         }
-      : defaultEditVal.hpa,
+        : defaultEditVal.hpa,
     configMapList: deployKindsMap.ConfigMap?.data
-      ? Object.entries(deployKindsMap.ConfigMap.data).map(([key, value], i) => ({
+        ? Object.entries(deployKindsMap.ConfigMap.data).map(([key, value], i) => ({
           mountPath:
-            appDeploy?.spec?.template.spec?.containers[0].volumeMounts?.find(
-              (item) => item.name === key
-            )?.mountPath || key,
+              appDeploy?.spec?.template.spec?.containers[0].volumeMounts?.find(
+                  (item) => item.name === key
+              )?.mountPath || key,
           value
         }))
-      : [],
+        : [],
     secret: atobSecretYaml(deployKindsMap?.Secret?.data?.['.dockerconfigjson']),
     storeList: deployKindsMap.StatefulSet?.spec?.volumeClaimTemplates
-      ? deployKindsMap.StatefulSet?.spec?.volumeClaimTemplates.map((item) => ({
+        ? deployKindsMap.StatefulSet?.spec?.volumeClaimTemplates.map((item) => ({
           name: item.metadata?.name || '',
           path: item.metadata?.annotations?.path || '',
           value: Number(item.metadata?.annotations?.value || 0)
         }))
-      : []
+        : []
   };
 };
 
@@ -370,58 +371,58 @@ export const adaptYamlToEdit = (yamlList: string[]) => {
 
   const domain = deployKindsMap?.Ingress?.spec?.rules?.[0].host;
   const cpuStr =
-    deployKindsMap?.Deployment?.spec?.template?.spec?.containers?.[0]?.resources?.requests?.cpu;
+      deployKindsMap?.Deployment?.spec?.template?.spec?.containers?.[0]?.resources?.requests?.cpu;
   const memoryStr =
-    deployKindsMap?.Deployment?.spec?.template?.spec?.containers?.[0]?.resources?.requests?.memory;
+      deployKindsMap?.Deployment?.spec?.template?.spec?.containers?.[0]?.resources?.requests?.memory;
 
   const res: Record<string, any> = {
     imageName: deployKindsMap?.Deployment?.spec?.template?.spec?.containers?.[0]?.image,
     runCMD:
-      deployKindsMap?.Deployment?.spec?.template?.spec?.containers?.[0]?.command?.join(' ') || '',
+        deployKindsMap?.Deployment?.spec?.template?.spec?.containers?.[0]?.command?.join(' ') || '',
     cmdParam:
-      deployKindsMap?.Deployment?.spec?.template?.spec?.containers?.[0]?.args?.join(' ') || '',
+        deployKindsMap?.Deployment?.spec?.template?.spec?.containers?.[0]?.args?.join(' ') || '',
     replicas: deployKindsMap?.Deployment?.spec?.replicas,
     cpu: cpuStr ? cpuFormatToM(cpuStr) : undefined,
     memory: memoryStr ? memoryFormatToMi(memoryStr) : undefined,
     accessExternal: deployKindsMap?.Ingress
-      ? {
+        ? {
           use: true,
           outDomain: domain?.split('.')[0],
           selfDomain: domain
         }
-      : undefined,
+        : undefined,
     containerOutPort:
-      deployKindsMap?.Deployment?.spec?.template?.spec?.containers?.[0]?.ports?.[0]?.containerPort,
+    deployKindsMap?.Deployment?.spec?.template?.spec?.containers?.[0]?.ports?.[0]?.containerPort,
     envs:
-      deployKindsMap?.Deployment?.spec?.template?.spec?.containers?.[0]?.env?.map((env) => ({
-        key: env.name,
-        value: env.value
-      })) || undefined,
+        deployKindsMap?.Deployment?.spec?.template?.spec?.containers?.[0]?.env?.map((env) => ({
+          key: env.name,
+          value: env.value
+        })) || undefined,
     hpa: deployKindsMap.HorizontalPodAutoscaler?.spec
-      ? {
+        ? {
           use: true,
           target:
-            (deployKindsMap.HorizontalPodAutoscaler.spec.metrics?.[0]?.resource
-              ?.name as HpaTarget) || 'cpu',
+              (deployKindsMap.HorizontalPodAutoscaler.spec.metrics?.[0]?.resource
+                  ?.name as HpaTarget) || 'cpu',
           value:
-            deployKindsMap.HorizontalPodAutoscaler.spec.metrics?.[0]?.resource?.target
-              ?.averageUtilization || 50,
+              deployKindsMap.HorizontalPodAutoscaler.spec.metrics?.[0]?.resource?.target
+                  ?.averageUtilization || 50,
           minReplicas: deployKindsMap.HorizontalPodAutoscaler.spec?.maxReplicas,
           maxReplicas: deployKindsMap.HorizontalPodAutoscaler.spec?.minReplicas
         }
-      : undefined,
+        : undefined,
     configMapList: deployKindsMap?.ConfigMap?.data
-      ? Object.entries(deployKindsMap?.ConfigMap.data).map(([key, value]) => ({
+        ? Object.entries(deployKindsMap?.ConfigMap.data).map(([key, value]) => ({
           mountPath: key,
           value
         }))
-      : undefined,
+        : undefined,
     secret: deployKindsMap.Secret
-      ? {
+        ? {
           ...defaultEditVal.secret,
           use: true
         }
-      : undefined
+        : undefined
   };
 
   for (const key in res) {
@@ -434,10 +435,10 @@ export const adaptYamlToEdit = (yamlList: string[]) => {
 };
 
 export const sliderNumber2MarkList = ({
-  val,
-  type,
-  gpuAmount = 1
-}: {
+                                        val,
+                                        type,
+                                        gpuAmount = 1
+                                      }: {
   val: number[];
   type: 'cpu' | 'memory';
   gpuAmount?: number;

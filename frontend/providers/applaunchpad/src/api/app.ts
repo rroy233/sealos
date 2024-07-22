@@ -1,5 +1,5 @@
 import { GET, POST, DELETE } from '@/services/request';
-import type { V1Deployment, V1Pod, SinglePodMetrics, V1StatefulSet } from '@kubernetes/client-node';
+import type { V1Deployment, V1Pod, SinglePodMetrics, V1StatefulSet, V1DaemonSet } from '@kubernetes/client-node';
 import {
   adaptAppListItem,
   adaptPod,
@@ -19,20 +19,20 @@ export const putApp = (data: {
 }) => POST('/api/updateApp', data);
 
 export const getMyApps = () =>
-  GET<V1Deployment & V1StatefulSet[]>('/api/getApps').then((res) => res.map(adaptAppListItem));
+    GET<(V1Deployment | V1StatefulSet | V1DaemonSet)[]>('/api/getApps').then((res) => res.map(adaptAppListItem));
 
 export const delAppByName = (name: string) => DELETE('/api/delApp', { name });
 
 export const getAppByName = (name: string) =>
-  GET(`/api/getAppByAppName?appName=${name}`).then(adaptAppDetail);
+    GET(`/api/getAppByAppName?appName=${name}`).then(adaptAppDetail);
 
 export const getAppPodsByAppName = (name: string) =>
-  GET<V1Pod[]>('/api/getAppPodsByAppName', { name }).then((item) => item.map(adaptPod));
+    GET<V1Pod[]>('/api/getAppPodsByAppName', { name }).then((item) => item.map(adaptPod));
 
 export const getPodsMetrics = (podsName: string[]) =>
-  POST<SinglePodMetrics[]>('/api/getPodsMetrics', { podsName }).then((item) =>
-    item.map(adaptMetrics)
-  );
+    POST<SinglePodMetrics[]>('/api/getPodsMetrics', { podsName }).then((item) =>
+        item.map(adaptMetrics)
+    );
 
 export const getPodLogs = (data: {
   appName: string;
@@ -42,7 +42,7 @@ export const getPodLogs = (data: {
 }) => POST<string>(`/api/getPodLogs`, data);
 
 export const getPodEvents = (podName: string) =>
-  GET(`/api/getPodEvents?podName=${podName}`).then(adaptEvents);
+    GET(`/api/getPodEvents?podName=${podName}`).then(adaptEvents);
 
 export const restartAppByName = (appName: string) => GET(`/api/restartApp?appName=${appName}`);
 

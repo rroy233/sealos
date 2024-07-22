@@ -9,20 +9,22 @@ import type {
   V1HorizontalPodAutoscaler,
   V1Pod,
   SinglePodMetrics,
-  V1StatefulSet
+  V1StatefulSet,
+  V1DaemonSet
 } from '@kubernetes/client-node';
 import { MonitorDataResult } from './monitor';
 
 export type HpaTarget = 'cpu' | 'memory';
 
 export type DeployKindsType =
-  | V1Deployment
-  | V1StatefulSet
-  | V1ConfigMap
-  | V1Service
-  | V1Ingress
-  | V1Secret
-  | V1HorizontalPodAutoscaler;
+    | V1Deployment
+    | V1StatefulSet
+    | V1DaemonSet
+    | V1ConfigMap
+    | V1Service
+    | V1Ingress
+    | V1Secret
+    | V1HorizontalPodAutoscaler;
 
 export type EditType = 'form' | 'yaml';
 
@@ -158,7 +160,7 @@ export interface PodEvent {
 }
 
 export type AppPatchPropsType = (
-  | { type: 'delete'; kind: `${YamlKindEnum}`; name: string }
-  | { type: 'patch'; kind: `${YamlKindEnum}`; value: Record<string, any> }
-  | { type: 'create'; kind: `${YamlKindEnum}`; value: string }
-)[];
+    | { type: 'delete'; kind: `${YamlKindEnum}`; name: string }
+    | { type: 'patch'; kind: `${YamlKindEnum}`; value: Record<string, any> }
+    | { type: 'create'; kind: `${YamlKindEnum}`; value: string }
+    )[];

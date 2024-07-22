@@ -21,13 +21,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
 
     // Check for errors other than 404
     const responseData = response
-      .map((item) => {
-        if (item.status === 'fulfilled') return item.value.body;
-        if (+item.reason?.body?.code === 404) return '';
-        throw new Error('Get APP Deployment Error');
-      })
-      .filter((item) => item)
-      .flat();
+        .map((item) => {
+          if (item.status === 'fulfilled') return item.value.body;
+          if (+item.reason?.body?.code === 404) return '';
+          throw new Error('Get APP Deployment Error');
+        })
+        .filter((item) => item)
+        .flat();
 
     jsonRes(res, {
       data: responseData
@@ -41,9 +41,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
 }
 
 export async function GetAppByAppName({
-  appName,
-  req
-}: { appName: string } & { req: NextApiRequest }) {
+                                        appName,
+                                        req
+                                      }: { appName: string } & { req: NextApiRequest }) {
   const { k8sApp, k8sCore, k8sNetworkingApp, k8sAutoscaling, namespace } = await getK8s({
     kubeconfig: await authSession(req.headers)
   });
@@ -51,24 +51,25 @@ export async function GetAppByAppName({
   const response = await Promise.allSettled([
     k8sApp.readNamespacedDeployment(appName, namespace),
     k8sApp.readNamespacedStatefulSet(appName, namespace),
+    k8sApp.readNamespacedDaemonSet(appName, namespace),
     k8sCore.readNamespacedService(appName, namespace),
     k8sCore.readNamespacedConfigMap(appName, namespace),
     k8sNetworkingApp
-      .listNamespacedIngress(
-        namespace,
-        undefined,
-        undefined,
-        undefined,
-        undefined,
-        `${appDeployKey}=${appName}`
-      )
-      .then((res) => ({
-        body: res.body.items.map((item) => ({
-          ...item,
-          apiVersion: res.body.apiVersion, // item does not contain apiversion and kind
-          kind: 'Ingress'
-        }))
-      })),
+        .listNamespacedIngress(
+            namespace,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            `${appDeployKey}=${appName}`
+        )
+        .then((res) => ({
+          body: res.body.items.map((item) => ({
+            ...item,
+            apiVersion: res.body.apiVersion, // item does not contain apiversion and kind
+            kind: 'Ingress'
+          }))
+        })),
     k8sCore.readNamespacedSecret(appName, namespace),
     k8sAutoscaling.readNamespacedHorizontalPodAutoscaler(appName, namespace)
   ]);

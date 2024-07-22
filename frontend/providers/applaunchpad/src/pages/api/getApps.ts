@@ -25,28 +25,36 @@ export async function GetApps({ req }: { req: NextApiRequest }) {
 
   const response = await Promise.allSettled([
     k8sApp.listNamespacedDeployment(
-      namespace,
-      undefined,
-      undefined,
-      undefined,
-      undefined,
-      appDeployKey
+        namespace,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        appDeployKey
     ),
     k8sApp.listNamespacedStatefulSet(
-      namespace,
-      undefined,
-      undefined,
-      undefined,
-      undefined,
-      appDeployKey
+        namespace,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        appDeployKey
+    ),
+    k8sApp.listNamespacedDaemonSet(
+        namespace,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        appDeployKey
     )
   ]);
 
   const apps = response
-    .filter((item) => item.status === 'fulfilled')
-    .map((item: any) => item?.value?.body?.items)
-    .filter((item) => item)
-    .flat();
+      .filter((item) => item.status === 'fulfilled')
+      .map((item: any) => item?.value?.body?.items)
+      .filter((item) => item)
+      .flat();
 
   return apps;
 }
