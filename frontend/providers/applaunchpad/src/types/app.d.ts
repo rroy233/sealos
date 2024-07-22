@@ -9,8 +9,7 @@ import type {
   V1HorizontalPodAutoscaler,
   V1Pod,
   SinglePodMetrics,
-  V1StatefulSet,
-  V1DaemonSet
+  V1StatefulSet
 } from '@kubernetes/client-node';
 import { MonitorDataResult } from './monitor';
 
@@ -19,7 +18,6 @@ export type HpaTarget = 'cpu' | 'memory';
 export type DeployKindsType =
   | V1Deployment
   | V1StatefulSet
-  | V1DaemonSet
   | V1ConfigMap
   | V1Service
   | V1Ingress

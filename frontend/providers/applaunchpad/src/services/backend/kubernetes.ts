@@ -1,6 +1,6 @@
 import * as k8s from '@kubernetes/client-node';
 import * as yaml from 'js-yaml';
-import type { V1Deployment, V1StatefulSet, V1DaemonSet } from '@kubernetes/client-node';
+import type { V1Deployment, V1StatefulSet } from '@kubernetes/client-node';
 import { UserQuotaItemType } from '@/types/user';
 import { memoryFormatToMi, cpuFormatToM } from '@/utils/tools';
 
@@ -77,6 +77,7 @@ export async function CreateYaml(
         error;
       }
     }
+    // console.error(error, '<=create error')
     return Promise.reject(error);
   }
   return created;
@@ -217,7 +218,7 @@ export async function getK8s({ kubeconfig }: { kubeconfig: string }) {
   };
 
   const getDeployApp = async (appName: string) => {
-    let app: V1Deployment | V1StatefulSet | V1DaemonSet | null = null;
+    let app: V1Deployment | V1StatefulSet | null = null;
     const k8sApp = kc.makeApiClient(k8s.AppsV1Api);
     const k8sCore = kc.makeApiClient(k8s.CoreV1Api);
 
@@ -229,12 +230,6 @@ export async function getK8s({ kubeconfig }: { kubeconfig: string }) {
 
     try {
       app = (await k8sApp.readNamespacedStatefulSet(appName, namespace)).body;
-    } catch (error: any) {
-      error;
-    }
-
-    try {
-      app = (await k8sApp.readNamespacedDaemonSet(appName, namespace)).body;
     } catch (error: any) {
       error;
     }

@@ -171,7 +171,6 @@ export enum YamlKindEnum {
   StatefulSet = 'StatefulSet',
   Deployment = 'Deployment',
   Service = 'Service',
-  DaemonSet = 'DaemonSet',
   ConfigMap = 'ConfigMap',
   Ingress = 'Ingress',
   Issuer = 'Issuer',

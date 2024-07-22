@@ -818,6 +818,7 @@ const Form = ({
                       <Switch
                         className="driver-deploy-network-switch"
                         size={'lg'}
+                        colorScheme={'blackAlpha'}
                         isChecked={!!network.openPublicDomain}
                         onChange={(e) => {
                           updateNetworks(i, {
