@@ -51,6 +51,7 @@ export async function GetAppByAppName({
   const response = await Promise.allSettled([
     k8sApp.readNamespacedDeployment(appName, namespace),
     k8sApp.readNamespacedStatefulSet(appName, namespace),
+    k8sApp.readNamespacedDaemonSet(appName, namespace),
     k8sCore.readNamespacedService(appName, namespace),
     k8sCore.readNamespacedConfigMap(appName, namespace),
     k8sNetworkingApp

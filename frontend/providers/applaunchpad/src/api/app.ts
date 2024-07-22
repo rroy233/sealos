@@ -1,5 +1,5 @@
 import { GET, POST, DELETE } from '@/services/request';
-import type { V1Deployment, V1Pod, SinglePodMetrics, V1StatefulSet } from '@kubernetes/client-node';
+import type { V1Deployment, V1Pod, SinglePodMetrics, V1StatefulSet, V1DaemonSet } from '@kubernetes/client-node';
 import {
   adaptAppListItem,
   adaptPod,
@@ -19,7 +19,7 @@ export const putApp = (data: {
 }) => POST('/api/updateApp', data);
 
 export const getMyApps = () =>
-  GET<V1Deployment & V1StatefulSet[]>('/api/getApps').then((res) => res.map(adaptAppListItem));
+  GET<(V1Deployment | V1StatefulSet | V1DaemonSet)[]>('/api/getApps').then((res) => res.map(adaptAppListItem));
 
 export const delAppByName = (name: string) => DELETE('/api/delApp', { name });
 

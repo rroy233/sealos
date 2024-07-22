@@ -3,7 +3,7 @@ import { ApiResp } from '@/services/kubernet';
 import { jsonRes } from '@/services/backend/response';
 import { YamlKindEnum } from '@/utils/adapt';
 import yaml from 'js-yaml';
-import type { V1StatefulSet } from '@kubernetes/client-node';
+import type { V1StatefulSet, V1DaemonSet } from '@kubernetes/client-node';
 import { PatchUtils } from '@kubernetes/client-node';
 import type { AppPatchPropsType } from '@/types/app';
 import { initK8s } from 'sealos-desktop-sdk/service';
@@ -83,6 +83,33 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
           }
         },
         delete: (name) => k8sApp.deleteNamespacedStatefulSet(name, namespace)
+      },
+      [YamlKindEnum.DaemonSet]: {
+        patch: async (jsonPatch: Object) => {
+          // patch -> replace -> delete and create
+          try {
+            await k8sApp.patchNamespacedDaemonSet(
+              appName,
+              namespace,
+              jsonPatch,
+              undefined,
+              undefined,
+              undefined,
+              undefined,
+              undefined,
+              { headers: { 'Content-type': PatchUtils.PATCH_FORMAT_JSON_MERGE_PATCH } }
+            );
+          } catch (error) {
+            try {
+              await k8sApp.replaceNamespacedDaemonSet(appName, namespace, jsonPatch);
+            } catch (error) {
+              warnLog('delete and create daemonSet', { yaml: yaml.dump(jsonPatch) });
+              await k8sApp.deleteNamespacedDaemonSet(appName, namespace);
+              await k8sApp.createNamespacedDaemonSet(namespace, jsonPatch);
+            }
+          }
+        },
+        delete: (name) => k8sApp.deleteNamespacedDaemonSet(name, namespace)
       },
       [YamlKindEnum.Service]: {
         patch: (jsonPatch: Object) =>

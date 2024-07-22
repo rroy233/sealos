@@ -39,6 +39,14 @@ export async function GetApps({ req }: { req: NextApiRequest }) {
       undefined,
       undefined,
       appDeployKey
+    ),
+    k8sApp.listNamespacedDaemonSet(
+      namespace,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      appDeployKey
     )
   ]);
 
